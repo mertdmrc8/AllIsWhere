@@ -25,7 +25,7 @@ public static class NetworkDriveDiscovery
 		}
 		try
 		{
-			using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Network");
+			using RegistryKey? registryKey = Registry.CurrentUser.OpenSubKey("Network");
 			if (registryKey == null)
 			{
 				return dictionary;
@@ -37,8 +37,8 @@ public static class NetworkDriveDiscovery
 				{
 					continue;
 				}
-				using RegistryKey registryKey2 = registryKey.OpenSubKey(text);
-				string text2 = registryKey2?.GetValue("RemotePath") as string;
+				using RegistryKey? registryKey2 = registryKey.OpenSubKey(text);
+				string? text2 = registryKey2?.GetValue("RemotePath") as string;
 				if (!string.IsNullOrWhiteSpace(text2))
 				{
 					char key = char.ToUpperInvariant(text[0]);

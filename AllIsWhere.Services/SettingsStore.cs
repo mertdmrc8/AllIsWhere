@@ -41,7 +41,7 @@ public static class SettingsStore
 
 	public static void Save(UserSettings settings)
 	{
-		string directoryName = Path.GetDirectoryName(SettingsPath);
+		string? directoryName = Path.GetDirectoryName(SettingsPath);
 		if (!string.IsNullOrEmpty(directoryName))
 		{
 			Directory.CreateDirectory(directoryName);

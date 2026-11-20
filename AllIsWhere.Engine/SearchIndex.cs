@@ -95,7 +95,7 @@ public sealed class SearchIndex
 
 	public void Remove(ulong fileId)
 	{
-		_entries.TryRemove(fileId, out IndexedEntry _);
+		_entries.TryRemove(fileId, out _);
 	}
 
 	public void UpsertPath(string path, bool isDirectory, bool isHidden = false)
@@ -106,7 +106,7 @@ public sealed class SearchIndex
 
 	public void RemovePath(string path)
 	{
-		_paths.TryRemove(Path.GetFullPath(path), out PathEntry _);
+		_paths.TryRemove(Path.GetFullPath(path), out _);
 	}
 
 	public void RemovePathTree(string path)
@@ -117,7 +117,7 @@ public sealed class SearchIndex
 		{
 			if (key.Equals(fullPath, StringComparison.OrdinalIgnoreCase) || key.StartsWith(value, StringComparison.OrdinalIgnoreCase))
 			{
-				_paths.TryRemove(key, out PathEntry _);
+				_paths.TryRemove(key, out _);
 			}
 		}
 	}
@@ -144,7 +144,7 @@ public sealed class SearchIndex
 			{
 				readOnlySet2 = extensions;
 			}
-			IReadOnlySet<string> effectiveExtensions = readOnlySet2;
+			IReadOnlySet<string>? effectiveExtensions = readOnlySet2;
 			if (terms.NameTerms.Count == 0 && terms.PathTerms.Count == 0 && (effectiveExtensions == null || effectiveExtensions.Count == 0))
 			{
 				return Array.Empty<SearchResult>();
@@ -272,7 +272,7 @@ public sealed class SearchIndex
 			queue.Enqueue(result, searchKey);
 			return;
 		}
-		queue.TryPeek(out SearchResult _, out SearchKey priority);
+		queue.TryPeek(out _, out SearchKey priority);
 		if (SearchKeyComparer.Instance.Compare(searchKey, priority) < 0)
 		{
 			queue.Dequeue();
@@ -286,7 +286,7 @@ public sealed class SearchIndex
 		{
 			return true;
 		}
-		queue.TryPeek(out SearchResult _, out SearchKey priority);
+		queue.TryPeek(out _, out SearchKey priority);
 		return StringComparer.OrdinalIgnoreCase.Compare(name, priority.Name) <= 0;
 	}
 
@@ -332,7 +332,7 @@ public sealed class SearchIndex
 			{
 				break;
 			}
-			if (!_entries.TryGetValue(parentFileId, out IndexedEntry value))
+			if (!_entries.TryGetValue(parentFileId, out var value))
 			{
 				break;
 			}

@@ -19,7 +19,7 @@ public static class StartupRegistration
 			registryKey.DeleteValue("EverythingLite", throwOnMissingValue: false);
 			return;
 		}
-		string processPath = Environment.ProcessPath;
+		string? processPath = Environment.ProcessPath;
 		if (string.IsNullOrWhiteSpace(processPath) || !File.Exists(processPath))
 		{
 			throw new InvalidOperationException("Uygulama EXE yolu belirlenemedi.");

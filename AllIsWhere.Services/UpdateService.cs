@@ -20,7 +20,7 @@ public static class UpdateService
 	{
 		using HttpResponseMessage response = await Client.GetAsync("https://api.github.com/repos/mertdmrc8/AllIsWhere-Updates/releases/latest", HttpCompletionOption.ResponseHeadersRead, token);
 		response.EnsureSuccessStatusCode();
-		AppUpdate result;
+		AppUpdate? result;
 		await using (Stream stream = await response.Content.ReadAsStreamAsync(token))
 		{
 			using JsonDocument jsonDocument = await JsonDocument.ParseAsync(stream, default, token);
@@ -37,7 +37,7 @@ public static class UpdateService
 			else
 			{
 				string text = rootElement.GetProperty("tag_name").GetString() ?? string.Empty;
-				if (!Version.TryParse(text.TrimStart(new char[2] { 'v', 'V' }).Split('-', '+')[0], out Version result2))
+				if (!Version.TryParse(text.TrimStart(new char[2] { 'v', 'V' }).Split('-', '+')[0], out var result2))
 				{
 					throw new InvalidDataException("Release tag '" + text + "' is not a valid version.");
 				}

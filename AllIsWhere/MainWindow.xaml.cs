@@ -152,7 +152,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 			}
 		}
 		char? priorSelection = ((DriveSelector.SelectedValue is char value) ? new char?(value) : ((char?)null));
-		DriveOption driveOption2 = list.FirstOrDefault((DriveOption drive) => drive.DriveType == DriveType.Fixed && drive.IsNtfs);
+		DriveOption? driveOption2 = list.FirstOrDefault((DriveOption drive) => drive.DriveType == DriveType.Fixed && drive.IsNtfs);
 		_suppressDriveSelection = !autoStartDefaultDrive || _settings.SearchRoots.Count > 0;
 		DriveSelector.ItemsSource = list;
 		DriveSelector.DisplayMemberPath = "Label";
@@ -218,12 +218,12 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 		{
 			_trayIcon.Text = LocalizationService.Get("TrayRunning");
 			ContextMenuStrip? contextMenuStrip = _trayIcon.ContextMenuStrip;
-			if (contextMenuStrip != null && contextMenuStrip.Items.Count > 0 && _trayIcon.ContextMenuStrip.Items[0] is ToolStripMenuItem toolStripMenuItem)
+			if (contextMenuStrip != null && contextMenuStrip.Items.Count > 0 && contextMenuStrip.Items[0] is ToolStripMenuItem toolStripMenuItem)
 			{
 				toolStripMenuItem.Text = LocalizationService.Get("TrayOpen");
 			}
 			ContextMenuStrip? contextMenuStrip2 = _trayIcon.ContextMenuStrip;
-			if (contextMenuStrip2 != null && contextMenuStrip2.Items.Count > 2 && _trayIcon.ContextMenuStrip.Items[2] is ToolStripMenuItem toolStripMenuItem2)
+			if (contextMenuStrip2 != null && contextMenuStrip2.Items.Count > 2 && contextMenuStrip2.Items[2] is ToolStripMenuItem toolStripMenuItem2)
 			{
 				toolStripMenuItem2.Text = LocalizationService.Get("TrayExit");
 			}
@@ -267,7 +267,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 
 	private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
 	{
-		CheckForUpdatesAtStartupAsync();
+		_ = CheckForUpdatesAtStartupAsync();
 		string[] array = _settings.SearchRoots.ToArray();
         var folderTasks = new List<Task>();
 		foreach (string text in array)
@@ -318,10 +318,10 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 		StatusText.Text = LocalizationService.Get("UpdateChecking");
 		try
 		{
-			AppUpdate appUpdate = await UpdateService.FindUpdateAsync(typeof(MainWindow).Assembly.GetName().Version ?? new Version(1, 0, 0));
+			AppUpdate? appUpdate = await UpdateService.FindUpdateAsync(typeof(MainWindow).Assembly.GetName().Version ?? new Version(1, 0, 0));
 			_settings.LastUpdateCheckUtc = DateTime.UtcNow;
 			PersistSettings();
-			if ((object)appUpdate == null)
+			if (appUpdate is null)
 			{
 				if (!automatic)
 				{
@@ -389,13 +389,13 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 		toolStripMenuItem2.Click += (object? _, EventArgs _) =>
 		{
 			_allowClose = true;
-			_trayIcon.Visible = false;
+			if (_trayIcon is { } trayIcon) trayIcon.Visible = false;
 			System.Windows.Application.Current.Shutdown();
 		};
 		contextMenuStrip.Items.Add(toolStripMenuItem);
 		contextMenuStrip.Items.Add(new ToolStripSeparator());
 		contextMenuStrip.Items.Add(toolStripMenuItem2);
-		string text = Process.GetCurrentProcess().MainModule?.FileName;
+		string? text = Process.GetCurrentProcess().MainModule?.FileName;
 		Icon icon = SystemIcons.Application;
 		try
 		{
@@ -437,7 +437,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 		{
 			return false;
 		}
-		DriveInfo driveInfo = DriveInfo.GetDrives().FirstOrDefault((DriveInfo d) => d.Name.Equals(root, StringComparison.OrdinalIgnoreCase));
+		DriveInfo? driveInfo = DriveInfo.GetDrives().FirstOrDefault((DriveInfo d) => d.Name.Equals(root, StringComparison.OrdinalIgnoreCase));
 		if (driveInfo == null)
 		{
 			return false;
@@ -482,8 +482,8 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 			return;
 		}
 		char driveLetter = (char)selectedValue;
-		DriveOption driveOption = DriveSelector.Items.OfType<DriveOption>().FirstOrDefault((DriveOption d) => d.Letter == driveLetter);
-		if ((object)driveOption == null)
+		DriveOption? driveOption = DriveSelector.Items.OfType<DriveOption>().FirstOrDefault((DriveOption d) => d.Letter == driveLetter);
+		if (driveOption is null)
 		{
 			return;
 		}
@@ -614,12 +614,12 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 		{
 			NtfsVolumeReader reader = new NtfsVolumeReader(drive);
 			Task<JournalCheckpoint> task = Task.Run((Func<JournalCheckpoint>)reader.GetJournalCheckpoint, token);
-			Task<CachedIndexSnapshot> cacheTask = Task.Run(() => (!useCache || !IndexCacheStore.TryLoad(drive, source.Index, out CachedIndexSnapshot snapshot)) ? null : snapshot, token);
+			Task<CachedIndexSnapshot?> cacheTask = Task.Run(() => (!useCache || !IndexCacheStore.TryLoad(drive, source.Index, out var snapshot)) ? null : snapshot, token);
 			JournalCheckpoint currentState = await task;
-			CachedIndexSnapshot cachedIndexSnapshot = await cacheTask;
-			bool cacheIsCurrent = (object)cachedIndexSnapshot != null && cachedIndexSnapshot.JournalId == currentState.JournalId && cachedIndexSnapshot.NextUsn >= currentState.FirstUsn && cachedIndexSnapshot.NextUsn <= currentState.NextUsn;
+			CachedIndexSnapshot? cachedIndexSnapshot = await cacheTask;
+			bool cacheIsCurrent = cachedIndexSnapshot is not null && cachedIndexSnapshot.JournalId == currentState.JournalId && cachedIndexSnapshot.NextUsn >= currentState.FirstUsn && cachedIndexSnapshot.NextUsn <= currentState.NextUsn;
 			JournalCheckpoint checkpoint;
-			if (cacheIsCurrent)
+			if (cacheIsCurrent && cachedIndexSnapshot is not null)
 			{
 				checkpoint = new JournalCheckpoint(cachedIndexSnapshot.JournalId, currentState.FirstUsn, cachedIndexSnapshot.NextUsn);
 				source.Status = LocalizationService.Get("CacheLoaded");
@@ -682,7 +682,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 
 	private async Task AddFolderSourceAsync(string folderPath, bool restoreSaved = false)
 	{
-		string networkAccessError = null;
+		string? networkAccessError = null;
 		string root;
 		try
 		{
@@ -694,8 +694,8 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 			StatusText.Text = LocalizationService.Get("InvalidFolderPath", ex.Message);
 			return;
 		}
-		Exception error2;
-		if (!(restoreSaved && FolderIndexCacheStore.Exists(root)) && !TryReadFolder(root, out Exception error))
+		Exception? error2;
+		if (!(restoreSaved && FolderIndexCacheStore.Exists(root)) && !TryReadFolder(root, out var error))
 		{
 			if (root.StartsWith("\\\\", StringComparison.Ordinal) && NetworkDriveDiscovery.TryResolveToMappedPath(root, out string mappedPath) && TryReadFolder(mappedPath, out error2))
 			{
@@ -739,7 +739,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 				if (_sources.ContainsKey(root))
 				{
 					UpdateSourceRow(source);
-					RefreshResultsAsync();
+					_ = RefreshResultsAsync();
 				}
 			}));
 		};
@@ -830,7 +830,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 					{
 						Dispatcher.BeginInvoke((Action)(() =>
 						{
-							RefreshResultsAsync();
+							_ = RefreshResultsAsync();
 						}));
 					}, token, startingCheckpoint.JournalId, (long cursor) =>
 					{
@@ -894,7 +894,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 						source.IsIndexing = false;
 						source.Status = LocalizationService.Get("MftUsn");
 						UpdateSourceRow(source);
-						RefreshResultsAsync();
+						_ = RefreshResultsAsync();
 					});
 				}
 			}
@@ -906,7 +906,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 		{
 			Exception ex5 = ex4;
 			Exception ex6 = ex5;
-			Dispatcher.BeginInvoke((Action)(() =>
+			_ = Dispatcher.BeginInvoke((Action)(() =>
 			{
 				if (_sources.ContainsKey(source.Root))
 				{
@@ -934,8 +934,8 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 
 	private void UpdateSourceRow(SearchSource source)
 	{
-		SourceRow sourceRow = _sourceRows.FirstOrDefault((SourceRow x) => x.Root.Equals(source.Root, StringComparison.OrdinalIgnoreCase));
-		if ((object)sourceRow != null)
+		SourceRow? sourceRow = _sourceRows.FirstOrDefault((SourceRow x) => x.Root.Equals(source.Root, StringComparison.OrdinalIgnoreCase));
+		if (sourceRow is not null)
 		{
 			int index = _sourceRows.IndexOf(sourceRow);
 			bool flag = SourcesList.SelectedItems.Contains(sourceRow);
@@ -959,7 +959,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 	{
 		SourceRow[] array = SourcesList.SelectedItems.OfType<SourceRow>().ToArray();
 		RemoveSourceButton.IsEnabled = array.Length != 0;
-		RefreshSourceButton.IsEnabled = array.Any((SourceRow row) => _sources.TryGetValue(row.Root, out SearchSource value) && !value.IsIndexing);
+		RefreshSourceButton.IsEnabled = array.Any((SourceRow row) => _sources.TryGetValue(row.Root, out var value) && !value.IsIndexing);
 	}
 
 	private async void RefreshSources_Click(object sender, RoutedEventArgs e)
@@ -1043,7 +1043,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 		SourceRow[] array = rows;
 		foreach (SourceRow row in array)
 		{
-			if (!_sources.Remove(row.Root, out SearchSource source))
+			if (!_sources.Remove(row.Root, out var source))
 			{
 				continue;
 			}
@@ -1089,8 +1089,8 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 				}
 			}
 			_sourceRows.Remove(row);
-			SourceFilterOption sourceFilterOption = _sourceFilterOptions.FirstOrDefault((SourceFilterOption x) => x.Root?.Equals(row.Root, StringComparison.OrdinalIgnoreCase) ?? false);
-			if ((object)sourceFilterOption != null)
+			SourceFilterOption? sourceFilterOption = _sourceFilterOptions.FirstOrDefault((SourceFilterOption x) => x.Root?.Equals(row.Root, StringComparison.OrdinalIgnoreCase) ?? false);
+			if (sourceFilterOption is not null)
 			{
 				_sourceFilterOptions.Remove(sourceFilterOption);
 			}
@@ -1098,7 +1098,6 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 			{
 				SourceFilterBox.SelectedIndex = 0;
 			}
-			source = null;
 		}
 		PersistSettings();
 		_results.Clear();
@@ -1132,8 +1131,8 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 	private void RemoveSavedSearch_Click(object sender, RoutedEventArgs e)
 	{
 		object selectedItem = SavedSearchBox.SelectedItem;
-		SavedSearch saved = selectedItem as SavedSearch;
-		if ((object)saved != null && System.Windows.MessageBox.Show(this, LocalizationService.Get("ConfirmRemoveSavedSearch", saved.Name), LocalizationService.Get("RemoveSavedSearch"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+		SavedSearch? saved = selectedItem as SavedSearch;
+		if (saved is not null && System.Windows.MessageBox.Show(this, LocalizationService.Get("ConfirmRemoveSavedSearch", saved.Name), LocalizationService.Get("RemoveSavedSearch"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
 		{
 			_settings.SavedSearches.RemoveAll((SavedSearch item) => item.Name.Equals(saved.Name, StringComparison.OrdinalIgnoreCase));
 			PersistSettings();
@@ -1219,7 +1218,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 			await Task.Delay(Math.Clamp(_settings.SearchDebounceMs, 0, 1000), token);
 			SearchSource[] source = _sources.Values.ToArray();
 			object selectedValue = SourceFilterBox.SelectedValue;
-			string selectedRoot = selectedValue as string;
+			string? selectedRoot = selectedValue as string;
 			if (selectedRoot != null)
 			{
 				source = source.Where((SearchSource x) => x.Root.Equals(selectedRoot, StringComparison.OrdinalIgnoreCase)).ToArray();
@@ -1227,7 +1226,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 			bool? flag2;
 			if (TypeFilterBox.SelectedItem is ComboBoxItem { Tag: var tag })
 			{
-				string text = tag?.ToString();
+				string? text = tag?.ToString();
 				bool? flag;
 				if (text == "Files")
 				{
@@ -1244,7 +1243,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 				flag2 = null;
 			}
 			bool? directoriesOnly = flag2;
-			IReadOnlySet<string> extensions = GetSelectedExtensions();
+			IReadOnlySet<string>? extensions = GetSelectedExtensions();
 			bool showHiddenFolders = HiddenFoldersCheckBox.IsChecked == true;
 			SearchQueryTerms parsedQuery = SearchQueryTerms.Parse(query);
 			int num = (int.TryParse((ModifiedFilterBox.SelectedItem as ComboBoxItem)?.Tag?.ToString(), out var result) ? result : 0);
@@ -1339,7 +1338,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 		}
 		else if (e.Key == Key.Escape)
 		{
-			System.Windows.Controls.ComboBox comboBox = FindOpenComboBox(this);
+			System.Windows.Controls.ComboBox? comboBox = FindOpenComboBox(this);
 			if (comboBox != null)
 			{
 				comboBox.IsDropDownOpen = false;
@@ -1377,7 +1376,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
         }
 		else if (e.Key == Key.F5 && SourcesList.SelectedItems.Count > 0)
 		{
-			RefreshSelectedSourcesAsync();
+			_ = RefreshSelectedSourcesAsync();
 			e.Handled = true;
 		}
 		else if (e.Key == Key.Return && ResultsList.IsKeyboardFocusWithin && ResultsList.SelectedItem is ResultRow row)
@@ -1397,7 +1396,7 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 			{
 				return comboBox;
 			}
-			System.Windows.Controls.ComboBox comboBox2 = FindOpenComboBox(child);
+			System.Windows.Controls.ComboBox? comboBox2 = FindOpenComboBox(child);
 			if (comboBox2 != null)
 			{
 				return comboBox2;
@@ -1509,8 +1508,8 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 
     private void RevealResult_Click(object sender, RoutedEventArgs e)
 	{
-		ResultRow contextMenuResult = GetContextMenuResult(sender);
-		if ((object)contextMenuResult == null)
+		ResultRow? contextMenuResult = GetContextMenuResult(sender);
+		if (contextMenuResult is null)
 		{
 			return;
 		}
@@ -1537,8 +1536,8 @@ public partial class MainWindow : Window, IComponentConnector, IStyleConnector
 
 	private void OpenResult_Click(object sender, RoutedEventArgs e)
 	{
-		ResultRow contextMenuResult = GetContextMenuResult(sender);
-		if ((object)contextMenuResult != null)
+		ResultRow? contextMenuResult = GetContextMenuResult(sender);
+		if (contextMenuResult is not null)
 		{
 			OpenResult(contextMenuResult);
 		}

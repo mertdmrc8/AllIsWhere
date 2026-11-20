@@ -16,6 +16,9 @@ internal static class NativeMethods
 		public long HighUsn;
 	}
 
+	// DeviceIoControl fills these fields in unmanaged code.
+#pragma warning disable CS0649
+	[StructLayout(LayoutKind.Sequential)]
 	internal struct UsnJournalData
 	{
 		public ulong UsnJournalId;
@@ -32,6 +35,8 @@ internal static class NativeMethods
 
 		public ulong AllocationDelta;
 	}
+
+#pragma warning restore CS0649
 
 	internal struct ReadUsnJournalData
 	{

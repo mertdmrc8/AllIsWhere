@@ -67,7 +67,7 @@ public partial class AddSourceWindow : Window, IComponentConnector
 				{
 					return text;
 				}
-				text = Directory.GetParent(text)?.FullName;
+				text = Directory.GetParent(text)?.FullName ?? string.Empty;
 			}
 			catch
 			{

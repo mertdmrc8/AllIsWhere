@@ -419,7 +419,7 @@ public sealed class FolderIndexingSession : IDisposable
 			{
 				return;
 			}
-			FileSystemWatcher fileSystemWatcher = null;
+			FileSystemWatcher? fileSystemWatcher = null;
 			try
 			{
 				fileSystemWatcher = new FileSystemWatcher(_root)
