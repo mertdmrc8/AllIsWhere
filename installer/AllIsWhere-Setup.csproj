@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>AllIsWhere-Setup</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net40</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <RootNamespace />
+    <PayloadDirectory Condition="'$(PayloadDirectory)' == ''">$(MSBuildThisFileDirectory)../bin/Release/net10.0-windows7.0</PayloadDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(PayloadDirectory)/AllIsWhere.exe" LogicalName="AllIsWhere.exe" />
+    <EmbeddedResource Include="$(PayloadDirectory)/AllIsWhere.dll" LogicalName="AllIsWhere.dll" />
+    <EmbeddedResource Include="$(PayloadDirectory)/AllIsWhere.deps.json" LogicalName="AllIsWhere.deps.json" />
+    <EmbeddedResource Include="$(PayloadDirectory)/AllIsWhere.runtimeconfig.json" LogicalName="AllIsWhere.runtimeconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+</Project>

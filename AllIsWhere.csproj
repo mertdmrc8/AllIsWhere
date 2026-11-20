@@ -1,23 +1,31 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <PlatformTarget>x64</PlatformTarget>
     <AssemblyName>AllIsWhere</AssemblyName>
-    <AssemblyTitle>AllIsWhere</AssemblyTitle>
-    <Product>AllIsWhere</Product>
-    <Company>AllIsWhere</Company>
-    <RootNamespace>AllIsWhere</RootNamespace>
-    <ApplicationIcon>Assets\AllIsWhere.ico</ApplicationIcon>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Using Remove="System.Windows.Forms" />
-    <Using Remove="System.Drawing" />
-    <Compile Remove="installer\**\*.cs" />
+    <ApplicationDefinition Remove="AllIsWhere\App.xaml" />
+    <ApplicationDefinition Include="AllIsWhere\App.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="app.xaml" />
+    <Page Remove="AllIsWhere\AddSourceWindow.xaml" />
+    <Page Remove="AllIsWhere\MainWindow.xaml" />
+    <Page Remove="AllIsWhere\SettingsWindow.xaml" />
+    <Page Include="AllIsWhere\AddSourceWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="addsourcewindow.xaml" />
+    <Page Include="AllIsWhere\MainWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="mainwindow.xaml" />
+    <Page Include="AllIsWhere\SettingsWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="settingswindow.xaml" />
   </ItemGroup>
+  <ItemGroup><Compile Remove="installer\**\*.cs" /></ItemGroup>
 </Project>
